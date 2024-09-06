@@ -18,6 +18,10 @@ var host = new HostBuilder()
 
         // Add Blob Storage client
         string storageConnectionString = Environment.GetEnvironmentVariable("ConnectionString");
+        if (string.IsNullOrEmpty(storageConnectionString))
+        {
+            throw new InvalidOperationException("Azure Storage connection string is not set. Please check your configuration.");
+        }
         services.AddSingleton(x => new BlobServiceClient(storageConnectionString));
 
         // Register the new blob storage service
