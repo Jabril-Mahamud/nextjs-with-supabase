@@ -5,7 +5,7 @@ import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader } from '../ui/card';
 import { callTtsFunction } from '@/services/ttsService';
-
+import { Progress } from '../ui/progress';
 
 export default function TextToSpeechForm() {
   const [text, setText] = useState('');
@@ -50,6 +50,11 @@ export default function TextToSpeechForm() {
             {loading ? 'Generating...' : 'Generate Speech'}
           </Button>
         </form>
+        {loading && (
+          <div className="mt-4">
+            <Progress value={100} /> {/* Display the progress indicator */}
+          </div>
+        )}
         {error && <p className="mt-2 text-red-500">{error}</p>}
         {resultUrl && (
           <div className="mt-4">

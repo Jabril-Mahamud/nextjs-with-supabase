@@ -1,23 +1,20 @@
 // services/ttsService.ts
 
-interface TtsResponse {
-    url: string; // Adjust based on your actual response structure
-  }
-  
-  export async function callTtsFunction(text: string): Promise<TtsResponse> {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_FUNCTION_URL}`, {
+export async function callTtsFunction(text: string): Promise<{ url: string }> {
+    const response = await fetch('https://nextjsfunctions.azurewebsites.net/api/http?', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'text/plain',
       },
-      body: JSON.stringify({ Text: text }), // Ensure 'Text' matches the expected key in your Azure Function
+      body: JSON.stringify({ text }),
     });
   
     if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`);
+      const errorMessage = await response.text();
+      throw new Error(`Error ${response.status}: ${errorMessage}`);
     }
   
-    const data: TtsResponse = await response.json();
-    return data;
+    const result = await response.json();
+    return result;
   }
   
