@@ -1,5 +1,6 @@
 // components/TextToSpeechForm.tsx
-'use client'
+'use client';
+
 import { useState } from 'react';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
@@ -12,18 +13,24 @@ export default function TextToSpeechForm() {
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setLoading(true);
     setError(null);
+    setResultUrl(null);
+    setProgress(30);  // Simulate initial progress
+
     try {
       const result = await callTtsFunction(text);
+      setProgress(70);  // Simulate progress at this point
       setResultUrl(result.url);
     } catch (err) {
-      setError('Failed to generate speech.');
+      setError('Failed to generate speech. Please try again.');
     } finally {
       setLoading(false);
+      setProgress(100);  // Mark the progress as complete
     }
   };
 
@@ -50,15 +57,21 @@ export default function TextToSpeechForm() {
             {loading ? 'Generating...' : 'Generate Speech'}
           </Button>
         </form>
+
+        {/* Show progress bar while loading */}
         {loading && (
           <div className="mt-4">
-            <Progress value={100} /> {/* Display the progress indicator */}
+            <Progress value={progress} className="w-full" />
           </div>
         )}
+
+        {/* Display error message */}
         {error && <p className="mt-2 text-red-500">{error}</p>}
+
+        {/* Show the result with a link to listen to the audio */}
         {resultUrl && (
           <div className="mt-4">
-            <p>Audio generated! <a href={resultUrl} target="_blank" rel="noopener noreferrer">Listen here</a></p>
+            <p className="text-green-600">Audio generated! <a href={resultUrl} target="_blank" rel="noopener noreferrer">Listen here</a></p>
           </div>
         )}
       </CardContent>
