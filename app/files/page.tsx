@@ -1,8 +1,14 @@
-import { createClient } from '@/utils/supabase/server'
+import FileUpload from '@/components/FileUpload'
+import React from 'react'
 
-export default async function Page() {
-  const supabase = createClient()
-  const { data: notes } = await supabase.from('notes').select()
-
-  return <pre>{JSON.stringify(notes, null, 2)}</pre>
+const page = () => {
+  return (
+    <div>
+      <h1>File Sharing</h1>
+      <FileUpload />
+    
+    </div>
+  )
 }
+
+export default page
