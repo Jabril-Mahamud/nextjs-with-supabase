@@ -87,10 +87,10 @@ export default function FileList() {
 
   return (
     <div className="p-4">
-      {loading && <p className="text-center text-gray-500">Loading files...</p>}
+      {loading && <p className="text-center ">Loading files...</p>}
       {errorMessage && <p className="text-center text-red-500">{errorMessage}</p>}
       {!loading && files.length === 0 && (
-        <p className="text-center text-gray-500">No files uploaded yet.</p>
+        <p className="text-center ">No files uploaded yet.</p>
       )}
       {!loading && files.length > 0 && (
         <div>
