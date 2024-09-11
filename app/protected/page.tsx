@@ -2,10 +2,17 @@ import { createClient } from "@/utils/supabase/server";
 import { InfoIcon } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export default async function ProtectedPage() {
   const supabase = createClient();
-
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -13,6 +20,24 @@ export default async function ProtectedPage() {
   if (!user) {
     return redirect("/sign-in");
   }
+
+  // Function to flatten nested objects
+  const flattenObject = (obj, prefix = '') => {
+    return Object.keys(obj).reduce((acc, k) => {
+      const pre = prefix.length ? `${prefix}.` : '';
+      if (typeof obj[k] === 'object' && obj[k] !== null && !Array.isArray(obj[k])) {
+        Object.assign(acc, flattenObject(obj[k], pre + k));
+      } else {
+        acc[pre + k] = obj[k] === null ? 'null' : 
+                       Array.isArray(obj[k]) ? JSON.stringify(obj[k]) : 
+                       obj[k].toString();
+      }
+      return acc;
+    }, {});
+  };
+
+  const flatUserData = flattenObject(user);
+  const userDataForTable = Object.entries(flatUserData).map(([key, value]) => ({ key, value }));
 
   return (
     <div className="flex-1 w-full flex flex-col gap-12">
@@ -25,9 +50,24 @@ export default async function ProtectedPage() {
       </div>
       <div className="flex flex-col gap-2 items-start">
         <h2 className="font-bold text-2xl mb-4">Your user details</h2>
-        <pre className="text-xs font-mono p-3 rounded border max-h-32 overflow-auto">
-          {JSON.stringify(user, null, 2)}
-        </pre>
+        <div className="w-full overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-1/3">Field</TableHead>
+                <TableHead>Value</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {userDataForTable.map((item) => (
+                <TableRow key={item.key}>
+                  <TableCell className="font-medium">{item.key}</TableCell>
+                  <TableCell className="break-all">{item.value}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </div>
       <div>
         <h2 className="font-bold text-2xl mb-4">Next steps</h2>
