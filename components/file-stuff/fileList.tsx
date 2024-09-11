@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Button } from '@/components/ui/button';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { ExternalLink } from 'lucide-react';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
 interface FileInfo {
   name: string;
@@ -76,60 +76,53 @@ export default function FileList() {
     return imageExtensions.some(ext => fileName.toLowerCase().endsWith(ext));
   };
 
+  const downloadAllFiles = () => {
+    files.forEach(file => {
+      const link = document.createElement('a');
+      link.href = file.url;
+      link.download = file.name;
+      link.click();
+    });
+  };
+
   return (
-    <div>
-      {loading && <p>Loading files...</p>}
-      {errorMessage && <p className="text-red-500">{errorMessage}</p>}
+    <div className="p-4">
+      {loading && <p className="text-center text-gray-500">Loading files...</p>}
+      {errorMessage && <p className="text-center text-red-500">{errorMessage}</p>}
       {!loading && files.length === 0 && (
-        <p>No files uploaded yet.</p>
+        <p className="text-center text-gray-500">No files uploaded yet.</p>
       )}
       {!loading && files.length > 0 && (
         <div>
+          <div className="mb-6 flex justify-center gap-4">
+            <Button onClick={downloadAllFiles} className="bg-blue-500 text-white hover:bg-blue-600">Download All</Button>
+            <Button as="a" href="/upload" className="bg-green-500 text-white hover:bg-green-600">Upload Page</Button>
+          </div>
           {/* Carousel for displaying images */}
-          <Carousel className="w-full max-w-xs mx-auto mb-8">
-            <CarouselContent>
-              {files.filter(file => isImageFile(file.name)).map((file, index) => (
-                <CarouselItem key={index}>
-                  <div className="p-1">
-                    <img src={file.url} alt={file.name} className="w-full h-auto object-cover aspect-square rounded-md" />
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
-          </Carousel>
-          
-          {/* Table displaying file details */}
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>File Name</TableHead>
-                <TableHead>Created At</TableHead>
-                <TableHead>Size</TableHead>
-                <TableHead>Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {files.map((file, index) => (
-                <TableRow key={index}>
-                  <TableCell>{file.name}</TableCell>
-                  <TableCell>{new Date(file.createdAt).toLocaleString()}</TableCell>
-                  <TableCell>{formatFileSize(file.size)}</TableCell>
-                  <TableCell>
-                    <a
-                      href={file.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-500 hover:text-blue-700 flex items-center"
-                    >
-                      Open <ExternalLink className="ml-1" size={16} />
-                    </a>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <div className="flex justify-center mb-8">
+            <Carousel className="w-full max-w-screen-sm md:max-w-md lg:max-w-lg xl:max-w-xl">
+              <CarouselContent>
+                {files.filter(file => isImageFile(file.name)).map((file, index) => (
+                  <CarouselItem key={index} className="relative flex items-center justify-center">
+                    <div className="relative">
+                      <a href={file.url} target="_blank" rel="noopener noreferrer">
+                        <img src={file.url} alt={file.name} className="w-full h-auto object-cover aspect-square rounded-md" />
+                      </a>
+                      <div className="absolute bottom-0 left-0 bg-black bg-opacity-50 text-white text-sm p-2 w-full text-center">
+                        {file.name}
+                      </div>
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <div className="absolute inset-y-0 left-0 flex items-center">
+                <CarouselPrevious className="bg-gray-800 text-white hover:bg-gray-700" />
+              </div>
+              <div className="absolute inset-y-0 right-0 flex items-center">
+                <CarouselNext className="bg-gray-800 text-white hover:bg-gray-700" />
+              </div>
+            </Carousel>
+          </div>
         </div>
       )}
     </div>
