@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react';
-import { createClient } from '../utils/supabase/client';
+import { createClient } from '../../utils/supabase/client';
 
 export default function FileUpload() {
   const [file, setFile] = useState<File | null>(null);

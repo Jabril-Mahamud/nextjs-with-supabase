@@ -1,4 +1,4 @@
-import FileUpload from '@/components/FileUpload'
+import FileUpload from '@/components/file-stuff/FileUpload'
 import React from 'react'
 
 const page = () => {
