@@ -1,45 +1,67 @@
-import { createClient } from "@/utils/supabase/server";
-import FileUpload from './FileUpload';  // Assuming FileUpload is in the same directory
+'use client'
 
-export default async function FileList() {
+import { useState } from 'react';
+import { createClient } from '../utils/supabase/client';
+
+export default function FileUpload() {
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
   const supabase = createClient();
-  
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  if (!user) {
-    return <div>Please sign in to view and upload files.</div>;
-  }
 
-  const { data, error } = await supabase.storage.from('user-uploads').list(user.id);
-  
-  if (error) {
-    console.error('Error fetching files:', error);
-    return <div>Error loading files</div>;
-  }
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setFile(e.target.files[0]);
+      console.log('File selected:', e.target.files[0].name);
+    }
+  };
 
-  const files = data.map(file => file.name);
+  const handleUpload = async () => {
+    if (!file) return;
+
+    setUploading(true);
+    console.log('Starting upload for file:', file.name);
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+      console.log('Authenticated user:', user.id);
+
+      const filePath = `${user.id}/${file.name}`;
+      console.log('File path:', filePath);
+
+      const { error } = await supabase.storage
+        .from('file-upload')
+        .upload(filePath, file);
+
+      if (error) throw error;
+
+      alert('File uploaded successfully!');
+      console.log('File uploaded successfully!');
+      setFile(null);
+    } catch (error: any) {
+      console.error('Error uploading file:', error.message);
+      alert(`Error uploading file: ${error.message}`);
+    } finally {
+      setUploading(false);
+      console.log('Upload process finished');
+    }
+  };
 
   return (
-    <div>
-      <h2 className="font-bold text-2xl mb-4">Your Files</h2>
-      {files.length === 0 ? (
-        <p>No files uploaded yet.</p>
-      ) : (
-        <ul className="list-disc pl-5">
-          {files.map((file) => (
-            <li key={file} className="mb-2">
-              <a
-                href={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/user-uploads/${user.id}/${encodeURIComponent(file)}`}
-                download
-                className="text-blue-600 hover:underline"
-              >
-                {file}
-              </a>
-            </li>
-          ))}
-        </ul>
-      )}
-      <FileUpload />
+    <div className="mt-4">
+      <input
+        type="file"
+        onChange={handleFileChange}
+        disabled={uploading}
+        className="mb-2"
+      />
+      <button
+        onClick={handleUpload}
+        disabled={!file || uploading}
+        className="bg-blue-500 text-white px-4 py-2 rounded disabled:bg-gray-300"
+      >
+        {uploading ? 'Uploading...' : 'Upload'}
+      </button>
     </div>
   );
 }
