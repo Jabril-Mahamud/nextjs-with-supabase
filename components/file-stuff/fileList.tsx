@@ -5,6 +5,7 @@ import { createClient } from '@/utils/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { ExternalLink } from 'lucide-react';
+import Link from 'next/link'; // Import Link from next/link
 
 interface FileInfo {
   name: string;
@@ -87,16 +88,18 @@ export default function FileList() {
 
   return (
     <div className="p-4">
-      {loading && <p className="text-center ">Loading files...</p>}
+      {loading && <p className="text-center">Loading files...</p>}
       {errorMessage && <p className="text-center text-red-500">{errorMessage}</p>}
       {!loading && files.length === 0 && (
-        <p className="text-center ">No files uploaded yet.</p>
+        <p className="text-center">No files uploaded yet.</p>
       )}
       {!loading && files.length > 0 && (
         <div>
           <div className="mb-6 flex justify-center gap-4">
             <Button onClick={downloadAllFiles} className="bg-blue-500 text-white hover:bg-blue-600">Download All</Button>
-            <Button as="a" href="/upload" className="bg-green-500 text-white hover:bg-green-600">Upload Page</Button>
+            <Link href="/files">
+              <Button className="bg-green-500 text-white hover:bg-green-600">Upload Page</Button>
+            </Link>
           </div>
           {/* Carousel for displaying images */}
           <div className="flex justify-center mb-8">
