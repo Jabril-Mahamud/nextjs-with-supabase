@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ExternalLink } from 'lucide-react';
-import { Carousel } from '@/components/ui/carousel'; // Import Carousel component from Shadcn
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
 interface FileInfo {
   name: string;
@@ -71,6 +71,11 @@ export default function FileList() {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  const isImageFile = (fileName: string) => {
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'];
+    return imageExtensions.some(ext => fileName.toLowerCase().endsWith(ext));
+  };
+
   return (
     <div>
       {loading && <p>Loading files...</p>}
@@ -81,12 +86,18 @@ export default function FileList() {
       {!loading && files.length > 0 && (
         <div>
           {/* Carousel for displaying images */}
-          <Carousel className="mb-4">
-            {files.map((file, index) => (
-              <div key={index} className="relative">
-                <img src={file.url} alt={file.name} className="w-full h-auto" />
-              </div>
-            ))}
+          <Carousel className="w-full max-w-xs mx-auto mb-8">
+            <CarouselContent>
+              {files.filter(file => isImageFile(file.name)).map((file, index) => (
+                <CarouselItem key={index}>
+                  <div className="p-1">
+                    <img src={file.url} alt={file.name} className="w-full h-auto object-cover aspect-square rounded-md" />
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious />
+            <CarouselNext />
           </Carousel>
           
           {/* Table displaying file details */}
