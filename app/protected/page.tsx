@@ -28,7 +28,13 @@ export default async function ProtectedPage() {
       if (typeof obj[k] === 'object' && obj[k] !== null && !Array.isArray(obj[k])) {
         Object.assign(acc, flattenObject(obj[k], pre + k));
       } else {
-        acc[pre + k] = obj[k];
+        
+          acc[pre + k] = obj[k] === null
+          ? 'null'
+          : Array.isArray(obj[k])
+          ? JSON.stringify(obj[k])
+          : obj[k].toString();
+
       }
       return acc;
     }, {});
@@ -57,12 +63,17 @@ export default async function ProtectedPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
+              
               {userDataForTable.map((item) => (
                 <TableRow key={item.key}>
                   <TableCell className="font-medium">{item.key}</TableCell>
-                  <TableCell className="break-all">{item.value}</TableCell>
+                  <TableCell className="break-all">
+                    {typeof item.value === 'string' ? item.value : JSON.stringify(item.value)}
+                  </TableCell>
+
                 </TableRow>
               ))}
+
             </TableBody>
           </Table>
         </div>
