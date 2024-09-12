@@ -22,20 +22,18 @@ export default async function ProtectedPage() {
   }
 
   // Function to flatten nested objects
-  const flattenObject = (obj, prefix = '') => {
-    return Object.keys(obj).reduce((acc, k) => {
+  const flattenObject = (obj: Record<string, any>, prefix: string = ''): Record<string, any> => {
+    return Object.keys(obj).reduce((acc: Record<string, any>, k: string) => {
       const pre = prefix.length ? `${prefix}.` : '';
       if (typeof obj[k] === 'object' && obj[k] !== null && !Array.isArray(obj[k])) {
         Object.assign(acc, flattenObject(obj[k], pre + k));
       } else {
-        acc[pre + k] = obj[k] === null ? 'null' : 
-                       Array.isArray(obj[k]) ? JSON.stringify(obj[k]) : 
-                       obj[k].toString();
+        acc[pre + k] = obj[k];
       }
       return acc;
     }, {});
   };
-
+  
   const flatUserData = flattenObject(user);
   const userDataForTable = Object.entries(flatUserData).map(([key, value]) => ({ key, value }));
 

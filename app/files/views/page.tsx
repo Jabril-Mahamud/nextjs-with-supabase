@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import FileList from '@/components/file-stuff/FileList'; // Ensure the correct path to your FileList component
+import FileList from '@/components/file-stuff/fileList'; // Ensure the correct path to your FileList component
 
 const Page = () => {
   return (
