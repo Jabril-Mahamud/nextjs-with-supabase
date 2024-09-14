@@ -3,9 +3,13 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { ExternalLink } from 'lucide-react';
-import Link from 'next/link'; // Import Link from next/link
+import { ExternalLink, Download } from 'lucide-react';
+import Link from 'next/link';
+import { useTheme } from 'next-themes';
+import { Progress } from '@/components/ui/progress';
+import { Toast } from "@/components/ui/toast";
+import { useToast } from '@/hooks/use-toast';
+import { ToastAction } from "@/components/ui/toast";
 
 interface FileInfo {
   name: string;
@@ -18,7 +22,11 @@ export default function FileList() {
   const [files, setFiles] = useState<FileInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [downloadProgress, setDownloadProgress] = useState(0);
+  const [isDownloading, setIsDownloading] = useState(false);
   const supabase = createClient();
+  const { theme } = useTheme();
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchFiles = async () => {
@@ -39,7 +47,7 @@ export default function FileList() {
             const { data, error } = await supabase
               .storage
               .from(process.env.NEXT_PUBLIC_SUPABASE_BUCKET!)
-              .createSignedUrl(`${userFolder}${file.name}`, 3600); // URL valid for 1 hour
+              .createSignedUrl(`${userFolder}${file.name}`, 3600);
 
             if (error) throw error;
 
@@ -77,54 +85,107 @@ export default function FileList() {
     return imageExtensions.some(ext => fileName.toLowerCase().endsWith(ext));
   };
 
-  const downloadAllFiles = () => {
-    files.forEach(file => {
-      const link = document.createElement('a');
-      link.href = file.url;
-      link.download = file.name;
-      link.click();
+  const downloadAllFiles = async () => {
+    setIsDownloading(true);
+    setDownloadProgress(0);
+    let downloadedCount = 0;
+
+    for (const file of files) {
+      try {
+        const response = await fetch(file.url);
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = file.name;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        downloadedCount++;
+        setDownloadProgress((downloadedCount / files.length) * 100);
+      } catch (error) {
+        console.error(`Error downloading ${file.name}:`, error);
+        toast({
+          title: "Download Error",
+          description: `Failed to download ${file.name}`,
+          variant: "destructive",
+        });
+      }
+    }
+
+    setIsDownloading(false);
+    toast({
+      title: "Download Complete",
+      description: `Successfully downloaded ${downloadedCount} out of ${files.length} files.`,
     });
   };
 
   return (
-    <div className="p-4">
+    <div className="p-4 dark:bg-gray-900 dark:text-white">
       {loading && <p className="text-center">Loading files...</p>}
-      {errorMessage && <p className="text-center text-red-500">{errorMessage}</p>}
+      {errorMessage && <p className="text-center text-red-500 dark:text-red-400">{errorMessage}</p>}
       {!loading && files.length === 0 && (
         <p className="text-center">No files uploaded yet.</p>
       )}
       {!loading && files.length > 0 && (
         <div>
-          <div className="mb-6 flex justify-center gap-4">
-            <Button onClick={downloadAllFiles} className="bg-blue-500 text-white hover:bg-blue-600">Download All</Button>
+          <div className="mb-6 flex flex-col items-center gap-4">
+            <Button 
+              onClick={downloadAllFiles} 
+              disabled={isDownloading}
+              className="bg-blue-500 text-white hover:bg-blue-600 dark:bg-blue-700 dark:hover:bg-blue-800 flex items-center gap-2"
+            >
+              <Download size={16} />
+              {isDownloading ? 'Downloading...' : 'Download All'}
+            </Button>
             <Link href="/files">
-              <Button className="bg-green-500 text-white hover:bg-green-600">Upload Page</Button>
+              <Button className="bg-green-500 text-white hover:bg-green-600 dark:bg-green-700 dark:hover:bg-green-800">
+                Upload Page
+              </Button>
             </Link>
+            {isDownloading && (
+              <div className="w-full max-w-xs">
+                <Progress value={downloadProgress} className="w-full" />
+                <p className="text-center mt-2">{`${Math.round(downloadProgress)}% Complete`}</p>
+              </div>
+            )}
           </div>
-          {/* Carousel for displaying images */}
-          <div className="flex justify-center mb-8">
-            <Carousel className="w-full max-w-screen-sm md:max-w-md lg:max-w-lg xl:max-w-xl">
-              <CarouselContent>
-                {files.filter(file => isImageFile(file.name)).map((file, index) => (
-                  <CarouselItem key={index} className="relative flex items-center justify-center">
-                    <div className="relative">
-                      <a href={file.url} target="_blank" rel="noopener noreferrer">
-                        <img src={file.url} alt={file.name} className="w-full h-auto object-cover aspect-square rounded-md" />
-                      </a>
-                      <div className="absolute bottom-0 left-0 bg-black bg-opacity-50 text-white text-sm p-2 w-full text-center">
-                        {file.name}
-                      </div>
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <div className="absolute inset-y-0 left-0 flex items-center">
-                <CarouselPrevious className="bg-gray-800 text-white hover:bg-gray-700" />
+          {/* Image Gallery Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {files.filter(file => isImageFile(file.name)).map((file, index) => (
+              <div key={index} className="relative group">
+                <a href={file.url} target="_blank" rel="noopener noreferrer" className="block">
+                  <img 
+                    src={file.url} 
+                    alt={file.name} 
+                    className="w-full h-48 object-cover rounded-md transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <ExternalLink className="text-white" size={24} />
+                  </div>
+                </a>
+                <div className="mt-2 text-sm">
+                  <p className="font-semibold truncate dark:text-gray-200">{file.name}</p>
+                  <p className="text-gray-600 dark:text-gray-400">{formatFileSize(file.size)}</p>
+                </div>
               </div>
-              <div className="absolute inset-y-0 right-0 flex items-center">
-                <CarouselNext className="bg-gray-800 text-white hover:bg-gray-700" />
-              </div>
-            </Carousel>
+            ))}
+          </div>
+          {/* Non-image files list */}
+          <div className="mt-8">
+            <h3 className="text-lg font-semibold mb-4 dark:text-gray-200">Other Files</h3>
+            <ul className="space-y-2">
+              {files.filter(file => !isImageFile(file.name)).map((file, index) => (
+                <li key={index} className="flex items-center justify-between bg-gray-100 dark:bg-gray-800 p-3 rounded-md">
+                  <span className="truncate flex-grow dark:text-gray-200">{file.name}</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400 mr-4">{formatFileSize(file.size)}</span>
+                  <a href={file.url} download className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">
+                    <Button size="sm" className="dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600">Download</Button>
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       )}
