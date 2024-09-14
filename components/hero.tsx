@@ -21,7 +21,7 @@ export default function Header() {
       <p className="text-3xl lg:text-4xl !leading-tight mx-auto max-w-xl text-center">
         Your ultimate solution for{" "}
         <a
-          href="https://example.com/free-file-storage"
+          href="/"
           target="_blank"
           className="font-bold hover:underline"
           rel="noreferrer"
