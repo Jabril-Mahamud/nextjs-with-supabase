@@ -4,6 +4,13 @@ import Link from "next/link";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { createClient } from "@/utils/supabase/server";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { User, LogIn, UserPlus, LogOut } from "lucide-react"; // Import lucide icons
 
 export default async function AuthButton() {
   const {
@@ -12,57 +19,72 @@ export default async function AuthButton() {
 
   if (!hasEnvVars) {
     return (
-      <>
-        <div className="flex gap-4 items-center">
-          <div>
-            <Badge
-              variant={"default"}
-              className="font-normal pointer-events-none"
-            >
-              Please update .env.local file with anon key and url
-            </Badge>
-          </div>
-          <div className="flex gap-2">
+      <div className="flex gap-4 items-center">
+        <Badge variant="default" className="font-normal pointer-events-none">
+          Please update .env.local file with anon key and url
+        </Badge>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
             <Button
-              asChild
+              variant="outline"
               size="sm"
-              variant={"outline"}
               disabled
               className="opacity-75 cursor-none pointer-events-none"
             >
-              <Link href="/sign-in">Sign in</Link>
+              Account
             </Button>
-            <Button
-              asChild
-              size="sm"
-              variant={"default"}
-              disabled
-              className="opacity-75 cursor-none pointer-events-none"
-            >
-              <Link href="/sign-up">Sign up</Link>
-            </Button>
-          </div>
-        </div>
-      </>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem disabled>Sign in</DropdownMenuItem>
+            <DropdownMenuItem disabled>Sign up</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     );
   }
-  return user ? (
-    <div className="flex items-center gap-4">
-      Hey, {user.email}!
-      <form action={signOutAction}>
-        <Button type="submit" variant={"outline"}>
-          Sign out
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm">
+          {user ? `Hey, ${user.email}!` : "Account"}
         </Button>
-      </form>
-    </div>
-  ) : (
-    <div className="flex gap-2">
-      <Button asChild size="sm" variant={"outline"}>
-        <Link href="/sign-in">Sign in</Link>
-      </Button>
-      <Button asChild size="sm" variant={"default"}>
-        <Link href="/sign-up">Sign up</Link>
-      </Button>
-    </div>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        {user ? (
+          <>
+            <DropdownMenuItem asChild>
+              <Link href="/profile" className="flex items-center gap-2">
+                <User size={16} /> Profile
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <form action={signOutAction}>
+                <Button
+                  type="submit"
+                  variant="ghost"
+                  className="w-full justify-start flex items-center gap-2"
+                >
+                  <LogOut size={16} /> Sign out
+                </Button>
+              </form>
+            </DropdownMenuItem>
+          </>
+        ) : (
+          <>
+            <DropdownMenuItem asChild>
+              <Link href="/sign-in" className="flex items-center gap-2">
+                <LogIn size={16} /> Sign in
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/sign-up" className="flex items-center gap-2">
+                <UserPlus size={16} /> Sign up
+              </Link>
+            </DropdownMenuItem>
+          </>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
