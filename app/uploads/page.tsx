@@ -5,7 +5,7 @@ import FileList from '@/components/file-stuff/fileList'; // Ensure the correct p
 
 const Page = () => {
   return (
-    <div className="flex flex-col items-center justify-center h-screen p-4 ">
+    <div className="flex flex-col items-center justify-center ">
       <h1 className="text-2xl md:text-3xl font-bold mb-8">Your Uploaded Files</h1>
       <div className="w-full max-w-3xl border shadow-md rounded-lg p-4">
         <FileList />
