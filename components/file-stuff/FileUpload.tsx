@@ -2,12 +2,16 @@
 
 import { useState } from 'react';
 import { createClient } from '../../utils/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Loader2 } from 'lucide-react'; // For loading spinner
+import { useToast } from '@/hooks/use-toast'; // Import useToast hook
 
 export default function FileUpload() {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null); // To store error messages
   const supabase = createClient();
+  const { toast } = useToast(); // Initialize toast
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -16,9 +20,12 @@ export default function FileUpload() {
   };
 
   const handleUpload = async () => {
-    setErrorMessage(null); // Reset error message before upload
     if (!file) {
-      setErrorMessage('No file selected.');
+      toast({
+        title: "Upload Error",
+        description: "No file selected.",
+        variant: "destructive", // Error toast
+      });
       return;
     }
 
@@ -42,34 +49,52 @@ export default function FileUpload() {
         throw new Error(`Upload Error: ${uploadError.message}`);
       }
 
-      alert('File uploaded successfully!');
-      setFile(null);
+      // Success toast
+      toast({
+        title: "Success",
+        description: "File uploaded successfully!",
+      });
+
+      setFile(null); // Clear the file input
     } catch (error: any) {
       console.error('Error uploading file:', error);
-      setErrorMessage(error.message || 'An unknown error occurred.');
+
+      // Error toast
+      toast({
+        title: "Upload Error",
+        description: error.message || 'An unknown error occurred.',
+        variant: "destructive",
+      });
     } finally {
       setUploading(false);
     }
   };
 
   return (
-    <div className="mt-4">
-      <input
+    <div className="mt-4 space-y-4">
+      {/* File Input */}
+      <Input
         type="file"
         onChange={handleFileChange}
         disabled={uploading}
         className="mb-2"
       />
-      <button
+
+      {/* Upload Button */}
+      <Button
         onClick={handleUpload}
         disabled={!file || uploading}
-        className="bg-blue-500 text-white px-4 py-2 rounded disabled:bg-gray-300"
+        className="w-full"
       >
-        {uploading ? 'Uploading...' : 'Upload'}
-      </button>
-      
-      {/* Display error messages if any */}
-      {errorMessage && <p className="text-red-500">{errorMessage}</p>}
+        {uploading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Uploading...
+          </>
+        ) : (
+          'Upload'
+        )}
+      </Button>
     </div>
   );
 }
