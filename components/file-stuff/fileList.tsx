@@ -7,9 +7,7 @@ import { ExternalLink, Download } from 'lucide-react';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import { Progress } from '@/components/ui/progress';
-import { Toast } from "@/components/ui/toast";
 import { useToast } from '@/hooks/use-toast';
-import { ToastAction } from "@/components/ui/toast";
 
 interface FileInfo {
   name: string;
@@ -39,7 +37,7 @@ export default function FileList() {
         const { data: files, error: listError } = await supabase.storage
           .from(process.env.NEXT_PUBLIC_SUPABASE_BUCKET!)
           .list(userFolder);
-        
+
         if (listError) throw listError;
 
         const fileInfos = await Promise.all(
@@ -122,7 +120,7 @@ export default function FileList() {
   };
 
   return (
-    <div className="p-4 dark:bg-gray-900 dark:text-white">
+    <div className="p-4">
       {loading && <p className="text-center">Loading files...</p>}
       {errorMessage && <p className="text-center text-red-500 dark:text-red-400">{errorMessage}</p>}
       {!loading && files.length === 0 && (
@@ -152,14 +150,14 @@ export default function FileList() {
             )}
           </div>
           {/* Image Gallery Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {files.filter(file => isImageFile(file.name)).map((file, index) => (
-              <div key={index} className="relative group">
+              <div key={index} className="relative group overflow-hidden rounded-lg">
                 <a href={file.url} target="_blank" rel="noopener noreferrer" className="block">
                   <img 
                     src={file.url} 
                     alt={file.name} 
-                    className="w-full h-48 object-cover rounded-md transition-transform duration-300 group-hover:scale-105"
+                    className="w-full h-60 object-cover transition-transform duration-300 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                     <ExternalLink className="text-white" size={24} />
