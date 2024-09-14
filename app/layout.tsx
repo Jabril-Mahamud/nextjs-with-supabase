@@ -40,8 +40,8 @@ export default function RootLayout({
                 <div className="w-full max-w-5xl flex justify-between items-center p-3 px-5 text-sm">
                   <div className="flex gap-5 items-center font-semibold">
                     <Link href={"/"}>Next.js Supabase Starter</Link>
-                    <Link href={"/file"} className="flex items-center gap-2">
-                      <File size={16} /> File
+                    <Link href={"/files"} className="flex items-center gap-2">
+                      <File size={16} /> Upload a File
                     </Link>
                     <Link href={"/gallery"} className="flex items-center gap-2">
                       <Image size={16} /> Gallery
