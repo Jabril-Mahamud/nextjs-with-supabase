@@ -40,7 +40,10 @@ export default function FileUpload() {
         throw new Error('User not authenticated. Please log in.');
       }
 
-      const filePath = `${user.id}/${file.name}`;
+      // Append a unique timestamp to the file name
+      const uniqueFileName = `${Date.now()}_${file.name}`;
+      const filePath = `${user.id}/${uniqueFileName}`;
+
       const { error: uploadError } = await supabase.storage
         .from('user-uploads')  // Ensure this bucket exists
         .upload(filePath, file);

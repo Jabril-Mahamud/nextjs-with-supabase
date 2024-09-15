@@ -99,6 +99,6 @@ Please file feedback and issues over on the [Supabase GitHub org](https://github
 
 ### extra info
 
-  testuser1@yopmail.com
+  testuser2@yopmail.com
 
-  Gvsjjjj,f3U):2e
+  Ea'V}rNdr?@V2N4.
